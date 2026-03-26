@@ -2,30 +2,11 @@ FROM node:20-slim
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      chromium \
-      ffmpeg \
-      fonts-noto \
-      fonts-noto-core \
-      fonts-noto-extra \
-      fontconfig \
-      libglib2.0-0 \
-      libnss3 \
-      libatk1.0-0 \
-      libatk-bridge2.0-0 \
-      libcups2 \
-      libdrm2 \
-      libxkbcommon0 \
-      libxcomposite1 \
-      libxdamage1 \
-      libxfixes3 \
-      libxrandr2 \
-      libgbm1 \
-      libasound2 \
-      libpango-1.0-0 \
-      libpangocairo-1.0-0 && \
-    fc-cache -fv && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+      chromium ffmpeg fonts-noto fonts-noto-core fonts-noto-extra fontconfig \
+      libglib2.0-0 libnss3 libatk1.0-0 libatk-bridge2.0-0 libcups2 \
+      libdrm2 libxkbcommon0 libxcomposite1 libxdamage1 libxfixes3 \
+      libxrandr2 libgbm1 libasound2 libpango-1.0-0 libpangocairo-1.0-0 && \
+    fc-cache -fv && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
@@ -34,7 +15,8 @@ WORKDIR /app
 COPY package.json tsconfig.json ./
 RUN npm install
 
-COPY src/ ./src/
+# Copy all flat files
+COPY index.ts Root.ts KaizerShort.tsx AnimatedStrip.tsx WordCaptions.tsx ./
 
 EXPOSE 3000
-CMD ["npx", "ts-node", "--project", "tsconfig.json", "src/server/index.ts"]
+CMD ["npx", "ts-node", "--project", "tsconfig.json", "index.ts"]

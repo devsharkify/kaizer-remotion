@@ -1,28 +1,43 @@
-{
-  "name": "kaizer-remotion",
-  "version": "1.0.0",
-  "description": "Kaizer News Telugu — Animated Shorts Renderer",
-  "scripts": {
-    "start": "node dist/server/index.js",
-    "build": "npx tsc -p tsconfig.json && npx remotion bundle src/index.ts --out dist/bundle",
-    "dev": "ts-node src/server/index.ts",
-    "studio": "npx remotion studio"
-  },
-  "dependencies": {
-    "@remotion/bundler": "4.0.237",
-    "@remotion/cli": "4.0.237",
-    "@remotion/renderer": "4.0.237",
-    "express": "^4.18.2",
-    "multer": "^1.4.5-lts.1",
-    "cors": "^2.8.5",
-    "remotion": "4.0.237"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/multer": "^1.4.11",
-    "@types/cors": "^2.8.17",
-    "@types/node": "^20.0.0",
-    "typescript": "^5.3.0",
-    "ts-node": "^10.9.0"
-  }
-}
+FROM node:20-slim
+
+# Install Chromium, FFmpeg, Telugu fonts — all needed by Remotion
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+      chromium \
+      ffmpeg \
+      fonts-noto \
+      fonts-noto-core \
+      fonts-noto-extra \
+      fontconfig \
+      libglib2.0-0 \
+      libnss3 \
+      libatk1.0-0 \
+      libatk-bridge2.0-0 \
+      libcups2 \
+      libdrm2 \
+      libxkbcommon0 \
+      libxcomposite1 \
+      libxdamage1 \
+      libxfixes3 \
+      libxrandr2 \
+      libgbm1 \
+      libasound2 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 && \
+    fc-cache -fv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Tell Remotion/Puppeteer where Chromium is
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+WORKDIR /app
+COPY package.json .
+RUN npm install
+
+COPY . .
+RUN npx tsc -p tsconfig.json
+
+EXPOSE 3000
+CMD ["node", "dist/server/index.js"]

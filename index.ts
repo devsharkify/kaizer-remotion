@@ -29,11 +29,28 @@ let bundlePath: string | null = null;
 async function getBundle(): Promise<string> {
   if (bundlePath && fs.existsSync(bundlePath)) return bundlePath;
   console.log("Bundling Remotion...");
-  // Entry point is root/Root.ts
   bundlePath = await bundle({
     entryPoint: path.join(__dirname, "Root.ts"),
     outDir: path.join(TMP, "bundle"),
-    webpackOverride: (config: any) => config,
+    webpackOverride: (config: any) => {
+      // Ensure ts-loader handles tsx files
+      const tsRule = config.module?.rules?.find((r: any) =>
+        r.test && r.test.toString().includes('tsx')
+      );
+      if (!tsRule) {
+        config.module = config.module || { rules: [] };
+        config.module.rules = config.module.rules || [];
+        config.module.rules.push({
+          test: /\.(ts|tsx)$/,
+          exclude: /node_modules/,
+          use: [{
+            loader: require.resolve('ts-loader'),
+            options: { transpileOnly: true }
+          }]
+        });
+      }
+      return config;
+    },
   });
   console.log("Bundle ready:", bundlePath);
   return bundlePath;
@@ -132,9 +149,9 @@ app.post(
       res.json({ success: true, downloadUrl: `/download/${token}`, sizeMB, elapsedSec: elapsed, clips: segPaths.length });
 
     } catch (err: any) {
-      console.error(`[${jobId}] Error:`, err.message);
+      console.error(`[${jobId}] Render error:`, err.message, err.stack?.slice(0, 500));
       [videoFile?.path, bottomImageFile?.path].filter(Boolean).forEach(f => { try { fs.unlinkSync(f!); } catch(e) {} });
-      res.status(500).json({ error: err.message });
+      if (!res.headersSent) res.status(500).json({ error: err.message || 'Unknown render error' });
     }
   }
 );

@@ -29,8 +29,11 @@ let bundlePath: string | null = null;
 async function getBundle(): Promise<string> {
   if (bundlePath && fs.existsSync(bundlePath)) return bundlePath;
   console.log("Bundling Remotion project...");
+  const entryPoint = path.join(__dirname, "../../src/index.ts");
+  const fallback   = path.join(__dirname, "../index.js");
+  const entry = fs.existsSync(entryPoint) ? entryPoint : fallback;
   bundlePath = await bundle({
-    entryPoint: path.join(__dirname, "../index.ts"),
+    entryPoint: entry,
     outDir: path.join(TMP, "bundle"),
     webpackOverride: (config) => config,
   });

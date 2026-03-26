@@ -56,6 +56,9 @@ async function getBundle(): Promise<string> {
   return bundlePath;
 }
 
+// ── Serve uploaded files via HTTP so Remotion can access them ──
+app.use("/media", express.static(TMP));
+
 app.get("/", (req: any, res: any) => {
   res.json({ status: "ok", service: "kaizer-remotion", version: "1.0" });
 });
@@ -77,7 +80,10 @@ app.post(
     const clips = body.clips || [];
     if (!clips.length) return res.status(400).json({ error: "No clips" });
 
-    console.log(`[${jobId}] Rendering ${clips.length} clips | ${ratio}`);
+    const baseUrl = `http://localhost:${PORT}`;
+    const videoUrl = `${baseUrl}/media/${path.basename(videoFile.path)}`;
+    const bottomImageUrl = bottomImageFile ? `${baseUrl}/media/${path.basename(bottomImageFile.path)}` : undefined;
+    console.log(`[${jobId}] Rendering ${clips.length} clips | ${ratio} | video: ${videoUrl}`);
 
     try {
       const bundleDir = await getBundle();
@@ -92,14 +98,14 @@ app.post(
 
         const outputPath = path.join(TMP, `seg_${jobId}_${i}.mp4`);
         const props = {
-          videoSrc: `file://${videoFile.path}`,
+          videoSrc: videoUrl,
           startSec: clip.startSec,
           endSec: clip.endSec,
           line1: clip.line1 || "",
           line2: clip.line2 || clip.teluguText?.slice(0, 30) || "",
           words: clip.words || [],
           ratio,
-          bottomImageSrc: bottomImageFile ? `file://${bottomImageFile.path}` : undefined,
+          bottomImageSrc: bottomImageUrl,
         };
 
         console.log(`[${jobId}] Clip ${i+1}: ${clip.startSec.toFixed(1)}→${clip.endSec.toFixed(1)}s`);

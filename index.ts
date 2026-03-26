@@ -94,7 +94,10 @@ app.post(
           codec: "h264",
           outputLocation: outputPath,
           inputProps: props,
-          chromiumOptions: { executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined, disableWebSecurity: true },
+          chromiumOptions: {
+            disableWebSecurity: true,
+          },
+          overrideBrowserExecutable: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
           logLevel: "warn",
         });
 

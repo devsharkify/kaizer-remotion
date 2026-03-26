@@ -110,9 +110,12 @@ app.post(
 
         console.log(`[${jobId}] Clip ${i+1}: ${clip.startSec.toFixed(1)}→${clip.endSec.toFixed(1)}s`);
 
+        const W = ratio === "9:16" ? 1080 : ratio === "9:10" ? 1080 : 1920;
+        const H = ratio === "9:16" ? 1920 : ratio === "9:10" ? 1200 : 1080;
+
         const composition = await selectComposition({ serveUrl: bundleDir, id: compId, inputProps: props });
         await renderMedia({
-          composition: { ...composition, durationInFrames: durationFrames },
+          composition: { ...composition, durationInFrames: durationFrames, width: W, height: H },
           serveUrl: bundleDir,
           codec: "h264",
           outputLocation: outputPath,

@@ -97,7 +97,7 @@ app.post(
           chromiumOptions: {
             disableWebSecurity: true,
           },
-          overrideBrowserExecutable: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+          browserExecutable: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
           logLevel: "warn",
         });
 

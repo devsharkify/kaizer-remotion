@@ -1,0 +1,43 @@
+FROM node:20-slim
+
+# Install Chromium, FFmpeg, Telugu fonts — all needed by Remotion
+RUN apt-get update -y && \
+    apt-get install -y --no-install-recommends \
+      chromium \
+      ffmpeg \
+      fonts-noto \
+      fonts-noto-core \
+      fonts-noto-extra \
+      fontconfig \
+      libglib2.0-0 \
+      libnss3 \
+      libatk1.0-0 \
+      libatk-bridge2.0-0 \
+      libcups2 \
+      libdrm2 \
+      libxkbcommon0 \
+      libxcomposite1 \
+      libxdamage1 \
+      libxfixes3 \
+      libxrandr2 \
+      libgbm1 \
+      libasound2 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 && \
+    fc-cache -fv && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Tell Remotion/Puppeteer where Chromium is
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+WORKDIR /app
+COPY package.json .
+RUN npm install
+
+COPY . .
+RUN npm run build
+
+EXPOSE 3000
+CMD ["node", "dist/server/index.js"]

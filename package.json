@@ -4,7 +4,7 @@
   "description": "Kaizer News Telugu — Animated Shorts Renderer",
   "scripts": {
     "start": "node dist/server/index.js",
-    "build": "tsc && npx remotion bundle src/index.ts --out dist/bundle",
+    "build": "npx tsc -p tsconfig.json && npx remotion bundle src/index.ts --out dist/bundle",
     "dev": "ts-node src/server/index.ts",
     "studio": "npx remotion studio"
   },
